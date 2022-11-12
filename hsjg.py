@@ -9,7 +9,6 @@
 import re
 from bs4 import BeautifulSoup
 import requests
-import time
 import pandas as pd
 import time
 
@@ -51,18 +50,26 @@ def login(account, password):
     }
     response = session.post(post_url, data=post_data, headers=header)
     response.encoding = "utf-8"
-    post_data = get_session_data(response.text)
+    status = get_session_data(response.text)
+    if status:
+        print(account, "登陆成功")
+        return 1
+    else:
+        print(account, "登陆失败")
+        time.sleep(600)
+        login(account, password)
+
 
 # 获取登录的session信息
 def get_session_data(html):
-    print(html)
     r = re.search('ptopid=(.*)&sid=(.*)"', html)
-    print(r)
     global info
-    info[0] = r.group(1)
-    info[1] = r.group(2)
-    print(info)
-    return info
+    if r:
+        info[0] = r.group(1)
+        info[1] = r.group(2)
+        return 1
+    else:
+        return 0
 
 
 # 查询核酸结果
@@ -84,7 +91,6 @@ def submit(data):
     b = r.text
     soup = BeautifulSoup(b, "html.parser")
     c = str(soup.head.script)
-    print(c)
     res = re.search('核酸结果时间<br />(.*)</div><div style=\'width:20px;height:100%', c)
     d = str(res.group(1))
     return d
@@ -94,6 +100,7 @@ def hsjg(number, id_card):
     login(number, id_card)
     res = submit(data)
     result.append([number, res])
+    print(number, "成功获取")
 
 
 # main方法
