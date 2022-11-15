@@ -73,7 +73,7 @@ def get_session_data(html):
 
 
 # 查询核酸结果
-def submit(data):
+def submit():
     url = "https://jksb.v.zzu.edu.cn/vls6sss/zzujksb.dll/getzhbofmen"
     headers = {
         "User-Agent": user_agent,
@@ -86,19 +86,22 @@ def submit(data):
     }
     r = requests.get(url, headers=headers, params=params)
     r.encoding = "utf-8"
-    # soup = BeautifulSoup(r, "html.parser")
-    a = time.strftime('%Y-%m-%d', time.localtime())
     b = r.text
     soup = BeautifulSoup(b, "html.parser")
     c = str(soup.head.script)
     res = re.search('核酸结果时间<br />(.*)</div><div style=\'width:20px;height:100%', c)
-    d = str(res.group(1))
-    return d
+    if res:
+        d = str(res.group(1))
+        return d
+    else:
+        time.sleep(300)
+        submit()
+
 
 
 def hsjg(number, id_card):
     login(number, id_card)
-    res = submit(data)
+    res = submit()
     result.append([number, res])
     print(number, "成功获取")
 
